@@ -1,0 +1,141 @@
+{% extends "shop/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+    {% trans "Your shopping cart" %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="container">
+
+        <div class="page-title">
+            <h3>{% trans "Your shopping cart" %}</h3>
+        </div>
+
+        <div class="row">
+
+            <div class="col-sm-12 col-md-8">
+
+                <div class="wrapper-table-cart">
+                    
+                    <!-- Товары для покупки -->
+                    <table class="shop-table">
+
+                        <thead>
+                            <tr>
+                                <th>{% trans "Image" %}</th>
+                                <th>{% trans "Product" %}</th>
+                                <th>{% trans "Unit price" %}</th>
+                                <th>{% trans "Quantity" %}</th>
+                                <th>{% trans "Price" %}</th>
+                                <th>{% trans "Remove" %}</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for item in cart %}
+                                {% with product=item.product %}
+
+                                    <tr>
+
+                                        <td>
+                                            <img src="{% if product.image %}{{ product.image.url }}{% else %}{% static "img/no_image.jpg" %}{% endif %}" alt="{{ product.name }}">
+                                        </td>
+
+                                        <td><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></td>
+
+                                        <td>{{ item.price }}</td>
+
+                                        <td>
+                                            <form class="quantity" action="{% url "cart:cart_add" product.id %}" method="post">
+                                                {{ item.update_quantity_form.quantity }}
+                                                {{ item.update_quantity_form.override }}
+                                                <input type="submit" value="{% trans "Update" %}">
+                                                {% csrf_token %}
+                                            </form>
+                                        </td>
+
+                                        <td>{{ item.total_price }}</td>
+
+                                        <td class="product-remove">
+                                            <form action="{% url "cart:cart_remove" product.id %}" method="post">
+                                                <input type="submit" value="X">
+                                                {% csrf_token %}
+                                            </form>
+                                        </td>
+
+                                    </tr>
+
+                                {% endwith %}
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+                    <!-- Конец блока товаров для покупки -->
+               
+                </div>
+
+                <!-- Блок купонов на скидку -->
+                <div class="box-coupon">
+
+                    <h3 class="coupon-box-title">{% trans "Apply a coupon" %}:</h3>
+
+                    <div class="inner-box">
+                        <form action="{% url "coupons:apply" %}" method="post">
+                            {{ coupon_apply_form }}
+                            <input type="submit" class="button" name="apply_coupon" value="{% trans "Apply" %}">
+                            {% csrf_token %}
+                        </form>
+                    </div>
+
+                </div>
+                <!-- Конец блока купонов на скидку -->
+
+            </div>
+            
+            <!-- Итог по покупке -->
+            <div class="col-sm-12 col-md-4">
+                <div class="box-cart-total">
+
+                    <h2 class="title">{% trans "Cart Totals" %}</h2>
+
+                    <table>
+
+                        <tr>
+                            <td colspan="2">{% trans "Subtotal" %}:</td>
+                            <td colspan="1" class="text-right">{{ cart.get_total_price|floatformat:2 }} ₽</td>
+                        </tr>
+
+                        {% if cart.coupon %}
+
+                            <tr>
+                                {% blocktrans with code=cart.coupon.code discount=cart.coupon.discount %}
+                                    <td colspan="2">"{{ code }}" coupon ({{ discount }}% off):</td>
+                                {% endblocktrans %}
+                                <td colspan="1" class="text-right">- {{ cart.get_discount|floatformat:2 }} ₽</td>
+                            </tr>
+
+                        {% endif %}
+
+                        <tr>
+                            <td colspan="2" class="order-total">{% trans "Total" %}:</td>
+                            <td colspan="1" class="text-right order-total total-price">{{ cart.get_total_price_after_discount|floatformat:2 }} ₽</td>
+                        </tr>
+
+                    </table>
+
+                    <a href="{% url "shop:product_list" %}" class="button medium">{% trans "Continue shopping" %}</a>
+                    <a href="{% url "orders:order_create" %}" class="button checkout-button">{% trans "Checkout" %}</a>
+
+                </div>
+            </div>
+            <!-- Конец блока итога по покупке -->
+
+        </div>
+    </div>
+
+{% endblock %}

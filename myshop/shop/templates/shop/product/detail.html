@@ -1,0 +1,45 @@
+{% extends "shop/base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}
+    {{ product.category }} - {{ product.name }}
+{% endblock %}
+
+{% block content %}
+
+    <div class="container">
+        <div class="row">
+            
+            <!-- Изображение товара -->
+            <div class="col-sm-4">
+                <img src="{% if product.image %}{{ product.image.url }}{% else %}{% static "img/no_image.jpg" %}{% endif %}" alt="{{ product.name }}">
+            </div>
+            <!-- Конец блока изображения товара -->
+            
+            <!-- Описание товара -->
+            <div class="col-sm-8">
+
+                <h3 class="product-name">
+                    <a href="{{ product.category.get_absolute_url }}">{{ product.category }} | {{ product.name }}</a>
+                </h3>
+
+                <span class="product-price">{{ product.price }} ₽</span>
+
+                <div class="description">
+                   {{ product.description|linebreaks }}
+                </div>
+
+                <form class="quantity" action="{% url "cart:cart_add" product.id %}" method="post">
+                    {{ cart_product_form }}
+                    {% csrf_token %}
+                    <input type="submit" class="btn-add" value="{% trans "Add to cart" %}">
+                </form>
+
+            </div>
+            <!-- Конец блока описания товара -->
+
+        </div>
+    </div>
+
+{% endblock %}

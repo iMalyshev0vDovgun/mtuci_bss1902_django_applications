@@ -1,0 +1,81 @@
+{% extends "shop/base.html" %}
+{% load i18n %}
+
+{% block title %}
+    {% trans "Checkout" %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="container">
+        <div class="row">
+            <form method="post" class="orders-form">
+
+                <div class="col-sm-6 payment-orders">
+
+                    <div class="page-title">
+                        <h3>{% trans "Checkout" %}</h3>
+                    </div>
+
+                    {{ form }}
+                    {% csrf_token %}
+
+                    <div class="checkout-orders">
+
+                        <h5>{% trans "Your order" %}:</h5>
+
+                        <table class="orders-table">
+
+                            <thead>
+
+                                <tr>
+                                    <th>{% trans "PRODUCT" %}</th>
+                                    <th class="right">{% trans "TOTAL" %}</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {% for item in cart %}
+
+                                    <tr>
+                                       <td>{{ item.quantity }}x {{ item.product.name }}</td>
+                                       <td class="right">{{ item.total_price|floatformat:2 }} ₽</td>
+                                    </tr>
+
+                                {% endfor %}
+
+                                {% if cart.coupon %}
+
+                                    <tr>
+
+                                        {% blocktrans with code=cart.coupon.code discount=cart.coupon.discount %}
+                                            <td>"{{ code }}" ({{ discount }}% off)</td>
+                                        {% endblocktrans %}
+
+                                        <td class="right">- {{ cart.get_discount|floatformat:2 }} ₽</td>
+                                    </tr>
+
+                                {% endif %}
+
+                                <tr id="orders-total">
+                                    <td>{% trans "TOTAL" %}:</td>
+                                    <td class="right">{{ cart.get_total_price_after_discount|floatformat:2 }} ₽</td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                        <input type="submit" class="btn-payment-orders" value="{% trans "Place order" %}">
+
+                    </div>
+
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
